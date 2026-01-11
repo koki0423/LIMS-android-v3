@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="検索"
+        android:textSize="24sp"
+        android:layout_marginBottom="32dp"/>
+
+    <TextView android:text="備品番号を入力" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+    <EditText
+        android:id="@+id/etSearchId"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="例: OFS-20251101..."
+        android:layout_marginBottom="24dp"/>
+
+    <TextView android:text="または 備品名キーワードを入力" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+    <EditText
+        android:id="@+id/etSearchKeyword"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="32dp"/>
+
+    <Space android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <Button
+            android:id="@+id/btnBackSearch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="戻る"/>
+        <Space android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"/>
+        <Button
+            android:id="@+id/btnExecSearch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="検索"
+            android:backgroundTint="#009688"/>
+    </LinearLayout>
+</LinearLayout>

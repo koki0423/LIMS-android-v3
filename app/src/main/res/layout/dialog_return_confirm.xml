@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:background="@android:color/white">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="返却登録"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="16dp"/>
+
+    <TextView android:text="貸出番号 (編集不可)" android:textSize="12sp" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+    <EditText
+        android:id="@+id/etLendId"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="01K5BX..."
+        android:enabled="false"
+        android:backgroundTint="#E0E0E0"
+        android:layout_marginBottom="8dp"/>
+
+    <TextView android:text="数量 (DBから自動入力)" android:textSize="12sp" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+    <EditText
+        android:id="@+id/etQuantity"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="1"
+        android:enabled="false"
+        android:backgroundTint="#E0E0E0"
+        android:layout_marginBottom="8dp"/>
+
+    <TextView android:text="借受者 (DBから自動入力)" android:textSize="12sp" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+    <EditText
+        android:id="@+id/etBorrowerName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="AB12345"
+        android:enabled="false"
+        android:backgroundTint="#E0E0E0"
+        android:layout_marginBottom="8dp"/>
+
+    <TextView android:text="返却日 (自動入力)" android:textSize="12sp" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+    <EditText
+        android:id="@+id/etReturnDate"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="2026-01-11"
+        android:enabled="false"
+        android:backgroundTint="#E0E0E0"
+        android:layout_marginBottom="24dp"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <Button
+            android:id="@+id/btnCloseReturn"
+            android:layout_width="0dp" android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="閉じる"
+            android:backgroundTint="#E0E0E0"
+            android:textColor="#000000"
+            android:layout_marginEnd="8dp"/>
+        <Button
+            android:id="@+id/btnExecReturn"
+            android:layout_width="0dp" android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="返却"
+            android:backgroundTint="#00695C"/>
+    </LinearLayout>
+</LinearLayout>

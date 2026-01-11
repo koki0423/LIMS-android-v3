@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="検索結果詳細"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="16dp"/>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView android:text="備品名" android:textSize="12sp" android:textColor="#757575"/>
+            <TextView android:id="@+id/tvDetailName" android:text="Arduinoキット" android:textSize="18sp" android:layout_marginBottom="12dp"/>
+
+            <TextView android:text="保管場所 / 所有者" android:textSize="12sp" android:textColor="#757575"/>
+            <TextView android:id="@+id/tvDetailLocation" android:text="3F ロッカー" android:textSize="16sp" android:layout_marginBottom="12dp"/>
+
+            <TextView android:text="メーカー" android:textSize="12sp" android:textColor="#757575"/>
+            <TextView android:id="@+id/tvDetailMaker" android:text="Arduino" android:textSize="16sp" android:layout_marginBottom="12dp"/>
+
+            <TextView android:text="型番" android:textSize="12sp" android:textColor="#757575"/>
+            <TextView android:id="@+id/tvDetailModel" android:text="Uno R3" android:textSize="16sp" android:layout_marginBottom="12dp"/>
+
+            <TextView android:text="シリアル番号" android:textSize="12sp" android:textColor="#757575"/>
+            <TextView android:id="@+id/tvDetailSerial" android:text="SN-99999" android:textSize="16sp" android:layout_marginBottom="12dp"/>
+
+            <TextView android:text="備考" android:textSize="12sp" android:textColor="#757575"/>
+            <TextView android:id="@+id/tvDetailRemarks" android:text="特になし" android:textSize="16sp" android:layout_marginBottom="12dp"/>
+
+        </LinearLayout>
+    </ScrollView>
+
+    <Button
+        android:id="@+id/btnBackDetail"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="戻る"
+        android:layout_marginTop="8dp"/>
+
+</LinearLayout>
