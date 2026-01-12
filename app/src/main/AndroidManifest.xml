@@ -1,7 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
-
+    <!--コード整形禁止-->
+    <uses-permission android:name="android.permission.NFC" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-feature android:name="android.hardware.nfc" android:required="true" />
+    <!--コード整形禁止-->
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -11,7 +16,9 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Limsv3"
+        android:usesCleartextTraffic="true"
         tools:targetApi="31">
+    <!--コード整形禁止-->
         <!-- 起動アクティビティ -->
         <activity android:name=".LoginActivity" android:screenOrientation="portrait" android:exported="true">
             <intent-filter>
@@ -19,7 +26,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
+    <!--コード整形禁止-->
         <!-- 各画面のアクティビティ定義-->
         <activity android:name=".ui.MenuActivity" android:screenOrientation="portrait"/>
         <activity android:name=".ui.SearchActivity" android:screenOrientation="portrait"/>
@@ -29,5 +36,5 @@
         <activity android:name=".ui.ReturnActivity" android:screenOrientation="portrait"/>
         <activity android:name=".ui.ReturnHistoryActivity" android:screenOrientation="portrait"/>
     </application>
-
+    <!--コード整形禁止-->
 </manifest>

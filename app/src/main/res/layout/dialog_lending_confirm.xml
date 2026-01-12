@@ -18,7 +18,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="備品番号 (表示のみ)"
+        android:text="備品番号"
         android:textColor="#757575"
         android:textSize="12sp"/>
     <TextView
@@ -35,7 +35,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="備品名 (表示のみ)"
+        android:text="備品名"
         android:textColor="#757575"
         android:textSize="12sp"/>
     <TextView
@@ -51,7 +51,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="在庫数量 (一括管理のみ操作可能)"
+        android:text="貸出数量"
         android:textColor="#757575"
         android:textSize="12sp"/>
     <TextView

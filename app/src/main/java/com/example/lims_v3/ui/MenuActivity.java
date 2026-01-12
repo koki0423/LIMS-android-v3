@@ -25,6 +25,8 @@ public class MenuActivity extends AppCompatActivity {
         Button btnLending = findViewById(R.id.btnLending);
         btnLending.setOnClickListener(v -> {
             Intent intent = new Intent(MenuActivity.this, LendingActivity.class);
+            // ログイン時に受け取っていた USER_ID を次へ渡す
+            intent.putExtra("USER_ID", getIntent().getStringExtra("USER_ID"));
             startActivity(intent);
         });
 
