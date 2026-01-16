@@ -32,9 +32,10 @@
         <activity android:name=".ui.SearchActivity" android:screenOrientation="portrait"/>
         <activity android:name=".ui.SettingsActivity" android:screenOrientation="portrait"/>
         <activity android:name=".ui.LendingActivity" android:screenOrientation="portrait"/>
-        <activity android:name=".ui.LendingHistoryActivity" android:screenOrientation="portrait"/>
+        <activity android:name=".ui.LendHistoryActivity" android:screenOrientation="portrait"/>
         <activity android:name=".ui.ReturnActivity" android:screenOrientation="portrait"/>
         <activity android:name=".ui.ReturnHistoryActivity" android:screenOrientation="portrait"/>
+        <activity android:name=".ui.LendDetailActivity" android:screenOrientation="portrait"/>
     </application>
     <!--コード整形禁止-->
 </manifest>
