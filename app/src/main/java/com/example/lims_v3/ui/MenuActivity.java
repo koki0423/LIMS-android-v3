@@ -33,7 +33,7 @@ public class MenuActivity extends AppCompatActivity {
         // 貸出履歴ボタン
         Button btnLendHistory=findViewById(R.id.btnLendHistory);
         btnLendHistory.setOnClickListener(v -> {
-            Intent intent = new Intent(MenuActivity.this, LendingHistoryActivity.class);
+            Intent intent = new Intent(MenuActivity.this, LendHistoryActivity.class);
             startActivity(intent);
         });
 
