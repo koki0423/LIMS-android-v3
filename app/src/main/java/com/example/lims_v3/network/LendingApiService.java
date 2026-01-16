@@ -18,4 +18,9 @@ public interface LendingApiService {
     Call<AssetMasterResponse> getAssetMaster(
             @Path("management_number") String managementNumber
     );
+
+    // 貸出履歴一覧取得
+    // クエリパラメータが必要な場合は @Query("limit") int limit 等を追加可能
+    @GET("lends")
+    Call<ListLendsResult> getLendHistory();
 }
