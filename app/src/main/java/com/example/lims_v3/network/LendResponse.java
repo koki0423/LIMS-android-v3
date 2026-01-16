@@ -19,6 +19,9 @@ public class LendResponse {
     @SerializedName("returned")
     private boolean returned;
 
+    @SerializedName("note")
+    private String note;
+
     // 必要に応じて他のフィールドも追加
     // @SerializedName("asset_master_id") private Long assetMasterId;
     // @SerializedName("quantity") private int quantity;
@@ -37,5 +40,13 @@ public class LendResponse {
 
     public String getLendUlid(){
         return lendUlid;
+    }
+
+    public Boolean getReturned(){
+        return returned;
+    }
+
+    public String getNote(){
+        return note;
     }
 }

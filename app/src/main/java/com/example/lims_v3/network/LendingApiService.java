@@ -23,4 +23,10 @@ public interface LendingApiService {
     // クエリパラメータが必要な場合は @Query("limit") int limit 等を追加可能
     @GET("lends")
     Call<ListLendsResult> getLendHistory();
+
+    // 特定の貸出詳細を取得
+    @GET("lends/{lend_ulid}")
+    Call<LendResponse> getLendDetail(
+            @Path("lend_ulid") String lendUlid
+    );
 }
