@@ -1,5 +1,7 @@
 package com.example.lims_v3.network;
 
+import java.util.List;
+
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.POST;
@@ -8,9 +10,9 @@ import retrofit2.http.Path;
 
 public interface LendingApiService {
     // :management_number の部分を @Path で置換します
-    @POST("assets/{management_number}/lends")
+    @POST("lends")
     Call<Void> createLend(
-            @Path("management_number") String managementNumber,
+//            @Path("management_number") String managementNumber,
             @Body CreateLendRequest request
     );
     // 備品マスタ取得用
@@ -22,7 +24,7 @@ public interface LendingApiService {
     // 貸出履歴一覧取得
     // クエリパラメータが必要な場合は @Query("limit") int limit 等を追加可能
     @GET("lends")
-    Call<ListLendsResult> getLendHistory();
+    Call<List<LendResponse>> getLendHistory();
 
     // 特定の貸出詳細を取得
     @GET("lends/{lend_ulid}")

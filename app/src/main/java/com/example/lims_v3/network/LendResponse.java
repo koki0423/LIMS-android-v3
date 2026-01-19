@@ -14,7 +14,8 @@ public class LendResponse {
     private String borrowerId;
 
     @SerializedName("lent_at")
-    private Date lentAt; // GsonがISO8601形式を自動パースしてくれます
+//    private Date lentAt; // GsonがISO8601形式を自動パースしてくれます
+    private String lentAt;
 
     @SerializedName("returned")
     private boolean returned;
@@ -22,9 +23,8 @@ public class LendResponse {
     @SerializedName("note")
     private String note;
 
-    // 必要に応じて他のフィールドも追加
-    // @SerializedName("asset_master_id") private Long assetMasterId;
-    // @SerializedName("quantity") private int quantity;
+    @SerializedName("quantity")
+    private int quantity;
 
     public String getManagementNumber() {
         return managementNumber;
@@ -34,7 +34,7 @@ public class LendResponse {
         return borrowerId;
     }
 
-    public Date getLentAt() {
+    public String getLentAt() {
         return lentAt;
     }
 
@@ -48,5 +48,8 @@ public class LendResponse {
 
     public String getNote(){
         return note;
+    }
+    public int getQuantity(){
+        return quantity;
     }
 }

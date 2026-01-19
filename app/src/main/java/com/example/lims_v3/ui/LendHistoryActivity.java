@@ -1,5 +1,6 @@
 package com.example.lims_v3.ui;
 
+import android.util.Log;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -17,6 +18,8 @@ import com.example.lims_v3.R;
 import com.example.lims_v3.network.LendResponse;
 import com.example.lims_v3.network.LendingApiService;
 import com.example.lims_v3.network.ListLendsResult;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import java.text.SimpleDateFormat;
 import java.util.List;
@@ -58,6 +61,11 @@ public class LendHistoryActivity extends AppCompatActivity {
         }
         if (!baseUrl.endsWith("/")) baseUrl += "/";
 
+//        // Gsonの設定を作成
+//        Gson gson = new GsonBuilder()
+//                .setDateFormat("yyyy-MM-dd'T'HH:mm:ss") // Goの標準フォーマットに合わせる
+//                .create();
+
         // 2. Retrofit準備
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(baseUrl)
@@ -66,12 +74,13 @@ public class LendHistoryActivity extends AppCompatActivity {
         LendingApiService service = retrofit.create(LendingApiService.class);
 
         // 3. APIコール (全件取得)
-        service.getLendHistory().enqueue(new Callback<ListLendsResult>() {
+        service.getLendHistory().enqueue(new Callback<List<LendResponse>>() {
             @Override
-            public void onResponse(Call<ListLendsResult> call, Response<ListLendsResult> response) {
+            public void onResponse(Call<List<LendResponse>> call, Response<List<LendResponse>> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    List<LendResponse> items = response.body().getItems();
-                    if (items == null || items.isEmpty()) {
+                    List<LendResponse> items = response.body();
+
+                    if (items.isEmpty()) {
                         showEmptyMessage();
                     } else {
                         updateHistoryList(items);
@@ -82,8 +91,10 @@ public class LendHistoryActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onFailure(Call<ListLendsResult> call, Throwable t) {
-                Toast.makeText(LendHistoryActivity.this, "通信エラー: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            public void onFailure(Call<List<LendResponse>> call, Throwable t) {
+                // エラーログ出力
+                Log.e("LendHistory", "通信エラー", t);
+                Toast.makeText(LendHistoryActivity.this, "通信エラー", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -108,8 +119,10 @@ public class LendHistoryActivity extends AppCompatActivity {
             tvBorrower.setText(item.getBorrowerId());
 
             if (item.getLentAt() != null) {
-                tvDate.setText(sdf.format(item.getLentAt()));
+//                tvDate.setText(sdf.format(item.getLentAt()));
+                tvDate.setText(item.getLentAt());
             } else {
+
                 tvDate.setText("-");
             }
 

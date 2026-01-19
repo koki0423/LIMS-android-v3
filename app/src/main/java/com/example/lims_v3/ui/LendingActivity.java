@@ -224,7 +224,7 @@ public class LendingActivity extends AppCompatActivity implements NfcAdapter.Rea
             // 3. リクエストデータの作成
             // 数量は画面設計書P7の「在庫数量：1」に従い固定または入力値を使用
             int quantity = 1;
-            CreateLendRequest requestBody = new CreateLendRequest(quantity, borrowerId, currentUserId);
+            CreateLendRequest requestBody = new CreateLendRequest(managementNumber,quantity, borrowerId, currentUserId);
 
             // 4. Retrofitインスタンスの生成
             Retrofit retrofit = new Retrofit.Builder()
@@ -235,7 +235,7 @@ public class LendingActivity extends AppCompatActivity implements NfcAdapter.Rea
             LendingApiService service = retrofit.create(LendingApiService.class);
 
             // 5. APIコール実行
-            Call<Void> call = service.createLend(managementNumber, requestBody);
+            Call<Void> call = service.createLend(requestBody);
 
             // ボタンを連打できないように無効化したりプログレスバーを出すのがベター
             btnLend.setEnabled(false);
