@@ -14,8 +14,7 @@ public class LendResponse {
     private String borrowerId;
 
     @SerializedName("lent_at")
-//    private Date lentAt; // GsonがISO8601形式を自動パースしてくれます
-    private String lentAt;
+    private Date lentAt; // GsonがISO8601形式を自動パースしてくれます
 
     @SerializedName("returned")
     private boolean returned;
@@ -34,7 +33,7 @@ public class LendResponse {
         return borrowerId;
     }
 
-    public String getLentAt() {
+    public Date getLentAt() {
         return lentAt;
     }
 

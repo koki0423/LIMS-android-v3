@@ -16,12 +16,12 @@ public class MenuActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_menu);
 
-        // ユーザー名表示 [cite: 29]
+        // ユーザー名表示
         String userId = getIntent().getStringExtra("USER_ID");
         TextView tvWelcome = findViewById(R.id.tvWelcome);
         tvWelcome.setText("こんにちは、" + userId + "さん");
 
-        // 貸出ボタン [cite: 28]
+        // 貸出ボタン
         Button btnLending = findViewById(R.id.btnLending);
         btnLending.setOnClickListener(v -> {
             Intent intent = new Intent(MenuActivity.this, LendingActivity.class);
@@ -41,6 +41,8 @@ public class MenuActivity extends AppCompatActivity {
         Button btnReturn=findViewById(R.id.btnReturn);
         btnReturn.setOnClickListener(v -> {
             Intent intent = new Intent(MenuActivity.this, ReturnActivity.class);
+            // ログイン時に受け取っていた USER_ID を次へ渡す
+            intent.putExtra("USER_ID", getIntent().getStringExtra("USER_ID"));
             startActivity(intent);
         });
 

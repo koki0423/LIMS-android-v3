@@ -27,8 +27,8 @@ public interface ReturningApiService {
             @Body CreateReturnRequest request
     );
 
-    // 返却履歴一覧 (今回の変更で影響なし、そのまま維持)
-    // GET /lends/:lend_ulid/returns の実装が必要ならここに追加
+    // 返却履歴一覧
+    // GET /returns
     @GET("returns")
-    Call<ReturnHistoryResponse> getReturnHistory();
+    Call<List<ReturnResponse>> getReturnHistory();
 }

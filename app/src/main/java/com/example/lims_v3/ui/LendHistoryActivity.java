@@ -17,9 +17,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.lims_v3.R;
 import com.example.lims_v3.network.LendResponse;
 import com.example.lims_v3.network.LendingApiService;
-import com.example.lims_v3.network.ListLendsResult;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 import java.text.SimpleDateFormat;
 import java.util.List;
@@ -38,7 +35,7 @@ public class LendHistoryActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_lending_history); // 以前作成したXMLを使用
+        setContentView(R.layout.activity_lending_history);
 
         // 戻るボタン
         findViewById(R.id.btnBackHistory).setOnClickListener(v -> finish());
@@ -60,11 +57,6 @@ public class LendHistoryActivity extends AppCompatActivity {
             return;
         }
         if (!baseUrl.endsWith("/")) baseUrl += "/";
-
-//        // Gsonの設定を作成
-//        Gson gson = new GsonBuilder()
-//                .setDateFormat("yyyy-MM-dd'T'HH:mm:ss") // Goの標準フォーマットに合わせる
-//                .create();
 
         // 2. Retrofit準備
         Retrofit retrofit = new Retrofit.Builder()
@@ -119,8 +111,7 @@ public class LendHistoryActivity extends AppCompatActivity {
             tvBorrower.setText(item.getBorrowerId());
 
             if (item.getLentAt() != null) {
-//                tvDate.setText(sdf.format(item.getLentAt()));
-                tvDate.setText(item.getLentAt());
+                tvDate.setText(sdf.format(item.getLentAt()));
             } else {
 
                 tvDate.setText("-");

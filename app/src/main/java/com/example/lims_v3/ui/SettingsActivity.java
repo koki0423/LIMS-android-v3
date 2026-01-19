@@ -1,6 +1,7 @@
 package com.example.lims_v3.ui;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.widget.Button;
@@ -20,8 +21,6 @@ public class SettingsActivity extends AppCompatActivity {
     public static final String KEY_API_URL = "API_URL";
 
     private EditText etApiUrl;
-    private TextView tvQrResult; // テスト用
-    private TextView tvNfcResult; // テスト用
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,12 +29,8 @@ public class SettingsActivity extends AppCompatActivity {
 
         // UI部品の取得
         etApiUrl = findViewById(R.id.etApiUrl);
-        tvQrResult = findViewById(R.id.tvQrResult);
-        tvNfcResult = findViewById(R.id.tvNfcResult);
         Button btnBack = findViewById(R.id.btnBackSettings);
         Button btnSave = findViewById(R.id.btnSaveSettings);
-        Button btnTestQr = findViewById(R.id.btnTestQr);
-        Button btnTestNfc = findViewById(R.id.btnTestNfc);
 
         // 1. 保存されている設定値を読み込んで表示
         loadSettings();
@@ -48,16 +43,16 @@ public class SettingsActivity extends AppCompatActivity {
             saveSettings();
         });
 
-        // QR読み取りテスト（モック動作）
-        btnTestQr.setOnClickListener(v -> {
-            // TODO: ここにQR読み取りロジックを入れる（必要であればLendingActivityと同様の実装）
-            tvQrResult.setText("読み取り成功: TEST-QR-001");
+        // NFC動作テスト
+        findViewById(R.id.btnTestNfc).setOnClickListener(v -> {
+            Intent intent = new Intent(SettingsActivity.this, NfcTestActivity.class);
+            startActivity(intent);
         });
 
-        // NFC読み取りテスト（モック動作）
-        btnTestNfc.setOnClickListener(v -> {
-            // TODO: ここにNFC読み取りロジックを入れる
-            tvNfcResult.setText("読み取り成功: IDm=0123456789ABCDEF");
+        // カメラ動作テスト
+        findViewById(R.id.btnTestCamera).setOnClickListener(v -> {
+            Intent intent = new Intent(SettingsActivity.this, CameraTestActivity.class);
+            startActivity(intent);
         });
     }
 

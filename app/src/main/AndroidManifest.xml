@@ -36,6 +36,9 @@
         <activity android:name=".ui.ReturnActivity" android:screenOrientation="portrait"/>
         <activity android:name=".ui.ReturnHistoryActivity" android:screenOrientation="portrait"/>
         <activity android:name=".ui.LendDetailActivity" android:screenOrientation="portrait"/>
+        <activity android:name=".ui.AssetDetailActivity" android:screenOrientation="portrait"/>
+        <activity android:name=".ui.NfcTestActivity" android:screenOrientation="portrait"/>
+        <activity android:name=".ui.CameraTestActivity" android:screenOrientation="portrait"/>
     </application>
     <!--コード整形禁止-->
 </manifest>

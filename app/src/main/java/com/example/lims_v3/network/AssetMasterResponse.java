@@ -1,16 +1,22 @@
 package com.example.lims_v3.network;
-
 import com.google.gson.annotations.SerializedName;
+import java.io.Serializable;
 
-public class AssetMasterResponse {
+public class AssetMasterResponse implements Serializable {
+    @SerializedName("asset_master_id")
+    private long assetMasterId;
+
     @SerializedName("name")
     private String name;
 
-    // 必要に応じて他のフィールドも追加可能です
-    // @SerializedName("manufacturer")
-    // private String manufacturer;
+    @SerializedName("manufacturer")
+    private String manufacturer;
 
-    public String getName() {
-        return name;
-    }
+    @SerializedName("model")
+    private String model;
+
+    // Getter
+    public String getName() { return name; }
+    public String getManufacturer() { return manufacturer; }
+    public String getModel() { return model; }
 }
