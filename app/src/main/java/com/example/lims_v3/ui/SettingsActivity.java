@@ -73,6 +73,9 @@ public class SettingsActivity extends AppCompatActivity {
 
         // EditTextにセット
         etApiUrl.setText(savedUrl);
+
+        boolean savedTerminalMode = prefs.getBoolean(KEY_TERMINAL_MODE, false);
+        cbTerminalMode.setChecked(savedTerminalMode);
     }
 
     // 設定を保存するメソッド
