@@ -1,6 +1,8 @@
 package com.example.lims_v3.ui;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.TextView;
@@ -10,6 +12,7 @@ import com.example.lims_v3.LoginActivity;
 import com.example.lims_v3.R;
 
 public class MenuActivity extends AppCompatActivity {
+    private boolean isTerminalMode;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -21,12 +24,24 @@ public class MenuActivity extends AppCompatActivity {
         TextView tvWelcome = findViewById(R.id.tvWelcome);
         tvWelcome.setText("こんにちは、" + userId + "さん");
 
+        // 設定（ターミナルモード）読み込み
+        SharedPreferences prefs = getSharedPreferences(SettingsActivity.PREF_NAME, Context.MODE_PRIVATE);
+        isTerminalMode = prefs.getBoolean(SettingsActivity.KEY_TERMINAL_MODE, false);
+
         // 貸出ボタン
         Button btnLending = findViewById(R.id.btnLending);
         btnLending.setOnClickListener(v -> {
-            Intent intent = new Intent(MenuActivity.this, LendingActivity.class);
-            // ログイン時に受け取っていた USER_ID を次へ渡す
-            intent.putExtra("USER_ID", getIntent().getStringExtra("USER_ID"));
+            Intent intent;
+
+            if (isTerminalMode) {
+                // ターミナル用（スキャナ入力）へ
+                intent = new Intent(MenuActivity.this, LendingTerminalActivity.class);
+            } else {
+                // 既存（カメラターゲット）へ
+                intent = new Intent(MenuActivity.this, LendingActivity.class);
+            }
+
+            intent.putExtra("USER_ID", userId);
             startActivity(intent);
         });
 
@@ -38,11 +53,17 @@ public class MenuActivity extends AppCompatActivity {
         });
 
         // 返却ボタン
-        Button btnReturn=findViewById(R.id.btnReturn);
+        Button btnReturn = findViewById(R.id.btnReturn);
         btnReturn.setOnClickListener(v -> {
-            Intent intent = new Intent(MenuActivity.this, ReturnActivity.class);
-            // ログイン時に受け取っていた USER_ID を次へ渡す
-            intent.putExtra("USER_ID", getIntent().getStringExtra("USER_ID"));
+            Intent intent;
+
+            if (isTerminalMode) {
+                intent = new Intent(MenuActivity.this, ReturnTerminalActivity.class);
+            } else {
+                intent = new Intent(MenuActivity.this, ReturnActivity.class);
+            }
+
+            intent.putExtra("USER_ID", userId);
             startActivity(intent);
         });
 
