@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/svRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:id="@+id/root"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- 備品番号 -->
+        <TextView
+            android:id="@+id/tvEquipmentLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="備品番号"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp" />
+
+        <!-- スキャナ入力を受ける（見た目は表示ボックス） -->
+        <EditText
+            android:id="@+id/etEquipmentCode"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:background="@drawable/bg_field"
+            android:hint="スキャンしてください"
+            android:inputType="textVisiblePassword"
+            android:singleLine="true"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:imeOptions="actionDone" />
+
+        <!-- 貸出先 -->
+        <TextView
+            android:id="@+id/tvBorrowerLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="貸出先 学籍番号"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:layout_marginTop="22dp"
+            android:layout_marginBottom="8dp" />
+
+        <!-- NFCで埋まる欄（必要なら手入力の逃げも可能） -->
+        <EditText
+            android:id="@+id/etBorrowerId"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:background="@drawable/bg_field"
+            android:hint="学生証（NFC）をかざしてください"
+            android:inputType="textVisiblePassword"
+            android:singleLine="true"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:imeOptions="actionDone" />
+
+        <!-- 実行結果（OK/NG等） -->
+        <TextView
+            android:id="@+id/tvActionResult"
+            android:layout_width="match_parent"
+            android:layout_height="72dp"
+            android:layout_marginTop="24dp"
+            android:background="@drawable/bg_field"
+            android:gravity="center"
+            android:padding="12dp"
+            android:text="OK/NG表示"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <!-- 実行ボタン -->
+        <Button
+            android:id="@+id/btnExecute"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginTop="18dp"
+            android:text="実行"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <!-- 下段：戻る（指定のButton形を踏襲、idだけ変更） -->
+        <Button
+            android:id="@+id/btnBack"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="戻る" />
+
+    </LinearLayout>
+</ScrollView>

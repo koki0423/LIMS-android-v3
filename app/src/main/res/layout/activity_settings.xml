@@ -11,6 +11,19 @@
         android:text="設定画面"
         android:textSize="24sp"
         android:layout_marginBottom="32dp"/>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="端末モード"
+        android:layout_marginBottom="8dp"/>
+
+    <CheckBox
+        android:id="@+id/cbTerminalMode"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="ターミナルモード（スキャナ入力）"
+        android:layout_marginBottom="24dp"/>
+
 
     <TextView android:text="APIサーバーURL" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
     <EditText

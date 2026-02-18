@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -17,10 +18,13 @@ public class SettingsActivity extends AppCompatActivity {
 
     // SharedPreferencesのファイル名とキーの定数定義
     // 他のActivity（ログイン画面や貸出画面）から呼び出すときもこのキーを使います
+    public static final String KEY_TERMINAL_MODE = "TERMINAL_MODE";
+
     public static final String PREF_NAME = "LendingAppPrefs";
     public static final String KEY_API_URL = "API_URL";
 
     private EditText etApiUrl;
+    private CheckBox cbTerminalMode;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,8 +33,10 @@ public class SettingsActivity extends AppCompatActivity {
 
         // UI部品の取得
         etApiUrl = findViewById(R.id.etApiUrl);
+        cbTerminalMode = findViewById(R.id.cbTerminalMode);
         Button btnBack = findViewById(R.id.btnBackSettings);
         Button btnSave = findViewById(R.id.btnSaveSettings);
+
 
         // 1. 保存されている設定値を読み込んで表示
         loadSettings();
@@ -67,11 +73,15 @@ public class SettingsActivity extends AppCompatActivity {
 
         // EditTextにセット
         etApiUrl.setText(savedUrl);
+
+        boolean savedTerminalMode = prefs.getBoolean(KEY_TERMINAL_MODE, false);
+        cbTerminalMode.setChecked(savedTerminalMode);
     }
 
     // 設定を保存するメソッド
     private void saveSettings() {
         String url = etApiUrl.getText().toString().trim();
+        boolean isTerminalMode = cbTerminalMode.isChecked();
 
         if (url.isEmpty()) {
             Toast.makeText(this, "URLを入力してください", Toast.LENGTH_SHORT).show();
@@ -83,6 +93,7 @@ public class SettingsActivity extends AppCompatActivity {
         SharedPreferences.Editor editor = prefs.edit();
 
         editor.putString(KEY_API_URL, url);
+        editor.putBoolean(KEY_TERMINAL_MODE, isTerminalMode);
         editor.apply(); // apply()は非同期で保存するのでUIをブロックしない
 
         Toast.makeText(this, "設定を保存しました", Toast.LENGTH_SHORT).show();
