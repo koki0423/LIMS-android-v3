@@ -6,6 +6,8 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.lims_v3.LoginActivity;
@@ -76,10 +78,16 @@ public class MenuActivity extends AppCompatActivity {
 
         // 検索ボタン
         Button btnSearch=findViewById(R.id.btnSearch);
+//        btnSearch.setOnClickListener(v -> {
+//            Intent intent =new Intent(MenuActivity.this, SearchActivity.class);
+//            startActivity(intent);
+//        });
         btnSearch.setOnClickListener(v -> {
-            Intent intent =new Intent(MenuActivity.this, SearchActivity.class);
-            startActivity(intent);
+            Toast.makeText(MenuActivity.this,
+                    "動作不安定のため今後機能追加予定です．",
+                    Toast.LENGTH_SHORT).show();
         });
+
 
         // 設定ボタン
         Button btnSettings =findViewById(R.id.btnSettings);
