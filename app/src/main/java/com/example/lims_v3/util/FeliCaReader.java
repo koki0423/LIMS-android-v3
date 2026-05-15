@@ -61,7 +61,6 @@ public class FeliCaReader {
                 // コマンドを生成して実行
                 byte[] command = buildReadCommand(nfcF.getSystemCode(), nfcF.getTag().getId());
                 byte[] response = nfcF.transceive(command);
-                Log.d(TAG, "Response: " + bytesToHex(response));
 
                 // レスポンスを解析
                 String studentId = parseStudentIdFromResponse(response);
@@ -104,7 +103,6 @@ public class FeliCaReader {
         command[pos++] = (byte) 0x80; // ブロック要素 (2byte/block, 先頭ブロック)
         command[pos]   = 0; // ブロック番号
 
-        Log.d(TAG, "Command: " + bytesToHex(command));
         return command;
     }
 
@@ -118,7 +116,6 @@ public class FeliCaReader {
 
         byte[] data = Arrays.copyOfRange(response, RESPONSE_HEADER_SIZE, response.length);
         String decodedString = new String(data, CHARSET_SHIFT_JIS).trim();
-        Log.d(TAG, "Decoded raw data: " + decodedString);
 
         if (decodedString.length() < STUDENT_ID_END_INDEX) {
             throw new IOException("Response data is too short.");

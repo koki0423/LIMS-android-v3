@@ -21,6 +21,7 @@
         android:padding="8dp">
 
         <TextView
+            android:id="@+id/tvHeaderPrimary"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -28,6 +29,7 @@
             android:textStyle="bold" />
 
         <TextView
+            android:id="@+id/tvHeaderSecondary"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1.5"
@@ -35,6 +37,7 @@
             android:textStyle="bold" />
 
         <TextView
+            android:id="@+id/tvHeaderTertiary"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="0.8"
@@ -42,26 +45,26 @@
             android:textStyle="bold" />
     </LinearLayout>
 
-    <ScrollView
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1">
 
-        <LinearLayout
-            android:id="@+id/historyContainer"
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvHistory"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <TextView
+            android:id="@+id/tvHistoryEmpty"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:padding="16dp"
-                android:text="データなし" />
-
-        </LinearLayout>
-    </ScrollView>
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:padding="16dp"
+            android:text="履歴がありません"
+            android:visibility="gone" />
+    </FrameLayout>
 
     <Button
         android:id="@+id/btnBackHistory"

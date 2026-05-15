@@ -9,6 +9,14 @@ public class AssetSetResponse implements Serializable {
     @SerializedName("asset")
     private AssetResponse asset;
 
+    public AssetSetResponse() {
+    }
+
+    public AssetSetResponse(AssetMasterResponse master, AssetResponse asset) {
+        this.master = master;
+        this.asset = asset;
+    }
+
     public AssetMasterResponse getMaster() { return master; }
     public AssetResponse getAsset() { return asset; }
 }

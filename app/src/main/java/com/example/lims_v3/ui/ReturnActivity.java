@@ -1,8 +1,6 @@
 package com.example.lims_v3.ui;
 
-import android.util.Log;
-import android.content.Context;
-import android.content.SharedPreferences;
+import android.Manifest;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,21 +8,22 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.lims_v3.R;
 import com.example.lims_v3.network.CreateReturnRequest;
 import com.example.lims_v3.network.LendResponse;
-import com.example.lims_v3.network.ListLendsResult;
 import com.example.lims_v3.network.ReturningApiService;
+import com.example.lims_v3.util.ApiClientFactory;
+import com.example.lims_v3.util.CameraPermissionHelper;
+import com.example.lims_v3.util.ReturnInputValidator;
+import com.google.zxing.ResultPoint;
 import com.journeyapps.barcodescanner.BarcodeCallback;
 import com.journeyapps.barcodescanner.BarcodeResult;
 import com.journeyapps.barcodescanner.CaptureManager;
 import com.journeyapps.barcodescanner.DecoratedBarcodeView;
-import com.google.zxing.ResultPoint;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -34,29 +33,29 @@ import java.util.Locale;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
 
 public class ReturnActivity extends AppCompatActivity {
+    private static final int CAMERA_PERMISSION_REQUEST_CODE = 1002;
 
     private CaptureManager capture;
     private DecoratedBarcodeView barcodeScannerView;
+    private Button btnLight;
     private boolean isModalShowing = false;
-
-    // 返却実行時に必要なIDを保持
+    private boolean scannerInitialized = false;
+    private Bundle initialSavedInstanceState;
     private String currentLendUlid = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_return);
+        initialSavedInstanceState = savedInstanceState;
 
         findViewById(R.id.btnBackReturn).setOnClickListener(v -> finish());
 
-        // ライトボタン設定（省略せずに記述）
-        Button btnLight = findViewById(R.id.btnLightReturn);
+        btnLight = findViewById(R.id.btnLightReturn);
         btnLight.setOnClickListener(v -> {
-            if (btnLight.getText().equals("ライトON")) {
+            if ("ライトON".contentEquals(btnLight.getText())) {
                 barcodeScannerView.setTorchOn();
                 btnLight.setText("ライトOFF");
             } else {
@@ -64,60 +63,29 @@ public class ReturnActivity extends AppCompatActivity {
                 btnLight.setText("ライトON");
             }
         });
+        btnLight.setEnabled(false);
 
         barcodeScannerView = findViewById(R.id.zxing_barcode_scanner_return);
-        capture = new CaptureManager(this, barcodeScannerView);
-        capture.initializeFromIntent(getIntent(), savedInstanceState);
-        capture.decode();
-
-        barcodeScannerView.decodeContinuous(new BarcodeCallback() {
-            @Override
-            public void barcodeResult(BarcodeResult result) {
-                if (result.getText() != null && !isModalShowing) {
-                    isModalShowing = true;
-                    barcodeScannerView.pause();
-                    // スキャンした管理番号で検索開始
-                    searchActiveLend(result.getText());
-                }
-            }
-
-            @Override
-            public void possibleResultPoints(List<ResultPoint> resultPoints) {
-            }
-        });
+        ensureCameraPermission();
     }
 
-    // Step 1: 管理番号から貸出中のデータを検索
     private void searchActiveLend(String managementNumber) {
-        SharedPreferences prefs = getSharedPreferences(SettingsActivity.PREF_NAME, Context.MODE_PRIVATE);
-        String baseUrl = prefs.getString(SettingsActivity.KEY_API_URL, "");
-
-        if (baseUrl.isEmpty()) {
-            showToast("API URL未設定");
+        final ReturningApiService service;
+        try {
+            service = ApiClientFactory.createService(this, ReturningApiService.class);
+        } catch (IllegalStateException | IllegalArgumentException exception) {
+            showToast(exception.getMessage());
             cleanupState();
             return;
         }
-        if (!baseUrl.endsWith("/")) baseUrl += "/";
 
-        // Gsonの設定を作成
-        Gson gson = new GsonBuilder()
-                .setDateFormat("yyyy-MM-dd'T'HH:mm:ss") // Goの標準フォーマットに合わせる
-                .create();
-
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(baseUrl)
-                .addConverterFactory(GsonConverterFactory.create(gson))
-                .build();
-        ReturningApiService service = retrofit.create(ReturningApiService.class);
-
-        // only_outstanding=true で検索
         service.searchActiveLend(managementNumber, true).enqueue(new Callback<List<LendResponse>>() {
             @Override
             public void onResponse(Call<List<LendResponse>> call, Response<List<LendResponse>> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    List<LendResponse> items = response.body(); // 直接リストを取得
+                    List<LendResponse> items = response.body();
                     if (!items.isEmpty()) {
-                        showReturnModal(items.get(0));
+                        showReturnModal(items.get(0), service);
                     } else {
                         showToast("貸出中のデータが見つかりません");
                         cleanupState();
@@ -131,12 +99,12 @@ public class ReturnActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call<List<LendResponse>> call, Throwable t) {
                 Toast.makeText(ReturnActivity.this, "通信エラー: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                cleanupState();
             }
         });
     }
 
-    // Step 2: モーダル表示
-    private void showReturnModal(LendResponse lendData) {
+    private void showReturnModal(LendResponse lendData, ReturningApiService service) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         LayoutInflater inflater = this.getLayoutInflater();
         View dialogView = inflater.inflate(R.layout.dialog_return_confirm, null);
@@ -149,17 +117,11 @@ public class ReturnActivity extends AppCompatActivity {
         Button btnClose = dialogView.findViewById(R.id.btnCloseReturn);
         Button btnExecReturn = dialogView.findViewById(R.id.btnExecReturn);
 
-        // データのセット
-        currentLendUlid = lendData.getLendUlid(); // API送信用にULIDを保存
-        // 画面上には管理番号を表示した方が分かりやすいが、レイアウト定義に従いULIDを表示するか、
-        // あるいは etLendId に管理番号(lendData.getManagementNumber())を入れるかは運用次第
+        currentLendUlid = lendData.getLendUlid();
         etLendId.setText(lendData.getManagementNumber());
-
         etQuantity.setText(String.valueOf(lendData.getQuantity()));
         etBorrowerName.setText(lendData.getBorrowerId());
-
-        String today = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
-        etReturnDate.setText(today);
+        etReturnDate.setText(new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date()));
 
         AlertDialog dialog = builder.create();
         dialog.setCancelable(false);
@@ -169,40 +131,34 @@ public class ReturnActivity extends AppCompatActivity {
             cleanupState();
         });
 
-        // Step 3: 返却実行
         btnExecReturn.setOnClickListener(v -> {
-            // 入力された数量を取得（部分返却対応の場合）
-            int returnQty = lendData.getQuantity(); // デフォルトは全返却
             try {
-                returnQty = Integer.parseInt(etQuantity.getText().toString());
-            } catch (NumberFormatException e) {
+                int returnQty = ReturnInputValidator.parseReturnQuantity(etQuantity.getText().toString(), lendData.getQuantity());
+                setReturnSubmissionState(btnExecReturn, btnClose, true);
+                executeReturn(service, currentLendUlid, returnQty, dialog, btnExecReturn, btnClose);
+            } catch (IllegalArgumentException exception) {
+                showToast(exception.getMessage());
             }
-
-            executeReturn(currentLendUlid, returnQty, dialog);
         });
 
         dialog.show();
     }
 
-    // Step 4: API送信
-    private void executeReturn(String lendUlid, int quantity, AlertDialog dialog) {
-        SharedPreferences prefs = getSharedPreferences(SettingsActivity.PREF_NAME, Context.MODE_PRIVATE);
-        String baseUrl = prefs.getString(SettingsActivity.KEY_API_URL, "");
-        if (!baseUrl.endsWith("/")) baseUrl += "/";
-
+    private void executeReturn(
+            ReturningApiService service,
+            String lendUlid,
+            int quantity,
+            AlertDialog dialog,
+            Button btnExecReturn,
+            Button btnClose
+    ) {
         String currentUserId = getIntent().getStringExtra("USER_ID");
-        if (currentUserId == null) currentUserId = "unknown";
+        if (currentUserId == null) {
+            currentUserId = "unknown";
+        }
 
-        // CreateReturnRequestには lend_ulid は不要になった
         CreateReturnRequest request = new CreateReturnRequest(quantity, currentUserId);
-
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(baseUrl)
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-        ReturningApiService service = retrofit.create(ReturningApiService.class);
-
-        service.createReturn(lendUlid,request).enqueue(new Callback<Void>() {
+        service.createReturn(lendUlid, request).enqueue(new Callback<Void>() {
             @Override
             public void onResponse(Call<Void> call, Response<Void> response) {
                 if (response.isSuccessful()) {
@@ -211,12 +167,14 @@ public class ReturnActivity extends AppCompatActivity {
                     cleanupState();
                 } else {
                     showToast("返却失敗: " + response.code());
+                    setReturnSubmissionState(btnExecReturn, btnClose, false);
                 }
             }
 
             @Override
             public void onFailure(Call<Void> call, Throwable t) {
                 showToast("エラー: " + t.getMessage());
+                setReturnSubmissionState(btnExecReturn, btnClose, false);
             }
         });
     }
@@ -224,7 +182,9 @@ public class ReturnActivity extends AppCompatActivity {
     private void cleanupState() {
         isModalShowing = false;
         currentLendUlid = null;
-        barcodeScannerView.resume();
+        if (barcodeScannerView != null) {
+            barcodeScannerView.resume();
+        }
     }
 
     private void showToast(String msg) {
@@ -234,18 +194,83 @@ public class ReturnActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        capture.onResume();
+        if (capture != null) {
+            capture.onResume();
+        }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        capture.onPause();
+        if (capture != null) {
+            capture.onPause();
+        }
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        capture.onDestroy();
+        if (capture != null) {
+            capture.onDestroy();
+        }
+    }
+
+    private void ensureCameraPermission() {
+        if (CameraPermissionHelper.hasCameraPermission(this)) {
+            initializeScanner();
+            return;
+        }
+        CameraPermissionHelper.requestCameraPermission(this, CAMERA_PERMISSION_REQUEST_CODE);
+    }
+
+    private void initializeScanner() {
+        if (scannerInitialized) {
+            return;
+        }
+
+        capture = new CaptureManager(this, barcodeScannerView);
+        capture.initializeFromIntent(getIntent(), initialSavedInstanceState);
+        capture.decode();
+        barcodeScannerView.decodeContinuous(new BarcodeCallback() {
+            @Override
+            public void barcodeResult(BarcodeResult result) {
+                if (result.getText() != null && !isModalShowing) {
+                    isModalShowing = true;
+                    barcodeScannerView.pause();
+                    searchActiveLend(result.getText());
+                }
+            }
+
+            @Override
+            public void possibleResultPoints(List<ResultPoint> resultPoints) {
+            }
+        });
+        scannerInitialized = true;
+        btnLight.setEnabled(true);
+        capture.onResume();
+    }
+
+    private void setReturnSubmissionState(Button btnExecReturn, Button btnClose, boolean isSubmitting) {
+        btnExecReturn.setEnabled(!isSubmitting);
+        btnClose.setEnabled(!isSubmitting);
+        btnExecReturn.setText(isSubmitting ? "送信中..." : "返却実行");
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode != CAMERA_PERMISSION_REQUEST_CODE) {
+            return;
+        }
+
+        if (permissions.length > 0
+                && Manifest.permission.CAMERA.equals(permissions[0])
+                && CameraPermissionHelper.isPermissionGranted(grantResults)) {
+            initializeScanner();
+            return;
+        }
+
+        Toast.makeText(this, "カメラ権限が必要です", Toast.LENGTH_LONG).show();
+        finish();
     }
 }

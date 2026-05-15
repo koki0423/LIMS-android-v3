@@ -12,13 +12,29 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.lims_v3.R;
+import com.example.lims_v3.network.AuthApiService;
+import com.example.lims_v3.network.LoginRequest;
+import com.example.lims_v3.network.TokenResponse;
 import com.example.lims_v3.ui.MenuActivity;
+import com.example.lims_v3.util.ApiClientFactory;
+import com.example.lims_v3.util.AuthSessionManager;
 import com.example.lims_v3.util.FeliCaReader;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class LoginActivity extends AppCompatActivity implements NfcAdapter.ReaderCallback {
 
     private EditText etUserId;
+    private EditText etPassword;
+    private Button btnLogin;
+    private Button btnStudentCardAuth;
     private NfcAdapter nfcAdapter;
     private FeliCaReader feliCaReader;
 
@@ -29,9 +45,9 @@ public class LoginActivity extends AppCompatActivity implements NfcAdapter.Reade
 
         // UI初期化
         etUserId = findViewById(R.id.etUserId);
-        EditText etPassword = findViewById(R.id.etPassword);
-        Button btnLogin = findViewById(R.id.btnLogin);
-        Button btnStudentCardAuth = findViewById(R.id.btnStudentCardAuth);
+        etPassword = findViewById(R.id.etPassword);
+        btnLogin = findViewById(R.id.btnLogin);
+        btnStudentCardAuth = findViewById(R.id.btnStudentCardAuth);
 
         // NFCアダプターとリーダーの初期化
         nfcAdapter = NfcAdapter.getDefaultAdapter(this);
@@ -39,19 +55,11 @@ public class LoginActivity extends AppCompatActivity implements NfcAdapter.Reade
 
         if (nfcAdapter == null) {
             Toast.makeText(this, "このデバイスはNFCに対応していません", Toast.LENGTH_LONG).show();
-            // 必要ならボタンを無効化
             btnStudentCardAuth.setEnabled(false);
         }
 
         // 通常ログインボタン
-        btnLogin.setOnClickListener(v -> {
-            String userId = etUserId.getText().toString();
-            if (!userId.isEmpty()) {
-                navigateToMenu(userId);
-            } else {
-                Toast.makeText(this, "IDを入力してください", Toast.LENGTH_SHORT).show();
-            }
-        });
+        btnLogin.setOnClickListener(v -> attemptPasswordLogin());
 
         // 学生証認証ボタン
         // NFC ReaderModeはonResumeで有効になるため、ボタンは「ガイド表示」として使います
@@ -70,13 +78,12 @@ public class LoginActivity extends AppCompatActivity implements NfcAdapter.Reade
     protected void onResume() {
         super.onResume();
         if (nfcAdapter != null) {
-            // ReaderModeを有効化 (FeliCaのみ反応させ、システム音を鳴らす設定)
             Bundle options = new Bundle();
             options.putInt(NfcAdapter.EXTRA_READER_PRESENCE_CHECK_DELAY, 250);
 
             nfcAdapter.enableReaderMode(
                     this,
-                    this, // onTagDiscoveredが呼ばれます
+                    this,
                     NfcAdapter.FLAG_READER_NFC_F | NfcAdapter.FLAG_READER_SKIP_NDEF_CHECK,
                     options
             );
@@ -87,7 +94,6 @@ public class LoginActivity extends AppCompatActivity implements NfcAdapter.Reade
     protected void onPause() {
         super.onPause();
         if (nfcAdapter != null) {
-            // アプリがバックグラウンドに行ったらReaderModeを解除
             nfcAdapter.disableReaderMode(this);
         }
     }
@@ -96,16 +102,13 @@ public class LoginActivity extends AppCompatActivity implements NfcAdapter.Reade
 
     @Override
     public void onTagDiscovered(Tag tag) {
-        // ここはバックグラウンドスレッドで呼ばれます
         feliCaReader.readStudentId(tag, new FeliCaReader.FeliCaCallback() {
             @Override
             public void onSuccess(@NonNull String studentId) {
-                // UI操作のためメインスレッドに戻す [cite: 1]
                 runOnUiThread(() -> {
                     Toast.makeText(LoginActivity.this, "読み取り成功: " + studentId, Toast.LENGTH_SHORT).show();
-                    // ID欄を埋める場合
                     etUserId.setText(studentId);
-                    // そのままログインさせる場合
+                    AuthSessionManager.clearSession(LoginActivity.this);
                     navigateToMenu(studentId);
                 });
             }
@@ -118,6 +121,100 @@ public class LoginActivity extends AppCompatActivity implements NfcAdapter.Reade
                 });
             }
         });
+    }
+
+    private void attemptPasswordLogin() {
+        String userId = etUserId.getText().toString().trim();
+        String password = etPassword.getText().toString();
+
+        if (userId.isEmpty()) {
+            Toast.makeText(this, "IDを入力してください", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (password.trim().isEmpty()) {
+            Toast.makeText(this, "パスワードを入力してください", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        final AuthApiService service;
+        try {
+            service = ApiClientFactory.createService(this, AuthApiService.class);
+        } catch (IllegalStateException | IllegalArgumentException exception) {
+            Toast.makeText(this, exception.getMessage(), Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        setLoginSubmitting(true);
+        service.login(new LoginRequest(userId, password)).enqueue(new Callback<TokenResponse>() {
+            @Override
+            public void onResponse(@NonNull Call<TokenResponse> call, @NonNull Response<TokenResponse> response) {
+                setLoginSubmitting(false);
+                if (response.isSuccessful() && response.body() != null) {
+                    handleLoginSuccess(userId, response.body());
+                    return;
+                }
+                Toast.makeText(LoginActivity.this, extractErrorMessage(response), Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<TokenResponse> call, @NonNull Throwable t) {
+                setLoginSubmitting(false);
+                String message = t.getMessage();
+                Toast.makeText(
+                        LoginActivity.this,
+                        "通信エラー" + (message != null && !message.isEmpty() ? ": " + message : ""),
+                        Toast.LENGTH_SHORT
+                ).show();
+            }
+        });
+    }
+
+    private void handleLoginSuccess(@NonNull String userId, @NonNull TokenResponse responseBody) {
+        String token = responseBody.getToken();
+        if (token == null || token.trim().isEmpty()) {
+            Toast.makeText(this, "ログインに成功しましたがトークンを取得できませんでした", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        AuthSessionManager.saveSession(this, userId, token.trim());
+        navigateToMenu(userId);
+    }
+
+    private void setLoginSubmitting(boolean isSubmitting) {
+        btnLogin.setEnabled(!isSubmitting);
+        btnStudentCardAuth.setEnabled(!isSubmitting && nfcAdapter != null);
+        etUserId.setEnabled(!isSubmitting);
+        etPassword.setEnabled(!isSubmitting);
+    }
+
+    private String extractErrorMessage(@NonNull Response<TokenResponse> response) {
+        String defaultMessage;
+        if (response.code() == 401) {
+            defaultMessage = "IDまたはパスワードが間違っています";
+        } else if (response.code() == 400) {
+            defaultMessage = "入力内容を確認してください";
+        } else {
+            defaultMessage = "ログインに失敗しました (" + response.code() + ")";
+        }
+
+        if (response.errorBody() == null) {
+            return defaultMessage;
+        }
+
+        try {
+            String rawBody = response.errorBody().string();
+            if (rawBody == null || rawBody.trim().isEmpty()) {
+                return defaultMessage;
+            }
+
+            JSONObject jsonObject = new JSONObject(rawBody);
+            String message = jsonObject.optString("message");
+            if (message != null && !message.trim().isEmpty()) {
+                return message;
+            }
+        } catch (JSONException | IOException ignored) {
+        }
+        return defaultMessage;
     }
 
     // --- 画面遷移 ---

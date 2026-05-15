@@ -90,8 +90,8 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="閉じる"
-            android:backgroundTint="#E0E0E0"
-            android:textColor="#000000"
+            android:backgroundTint="@color/business_button_neutral"
+            android:textColor="@color/business_text_primary"
             android:layout_marginEnd="8dp"/>
 
         <Button
@@ -100,7 +100,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="貸出"
-            android:backgroundTint="#00695C"/>
+            android:backgroundTint="@color/business_success"/>
     </LinearLayout>
 
 </LinearLayout>

@@ -83,6 +83,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="保存"
-            android:backgroundTint="#009688"/>
+            android:backgroundTint="@color/business_primary"/>
     </LinearLayout>
 </LinearLayout>

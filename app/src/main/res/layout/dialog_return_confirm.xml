@@ -49,7 +49,7 @@
         android:layout_height="wrap_content"
         android:text="2026-01-11"
         android:enabled="false"
-        android:backgroundTint="#E0E0E0"
+        android:backgroundTint="@color/business_button_neutral"
         android:layout_marginBottom="24dp"/>
 
     <LinearLayout
@@ -61,14 +61,14 @@
             android:layout_width="0dp" android:layout_weight="1"
             android:layout_height="wrap_content"
             android:text="閉じる"
-            android:backgroundTint="#E0E0E0"
-            android:textColor="#000000"
+            android:backgroundTint="@color/business_button_neutral"
+            android:textColor="@color/business_text_primary"
             android:layout_marginEnd="8dp"/>
         <Button
             android:id="@+id/btnExecReturn"
             android:layout_width="0dp" android:layout_weight="1"
             android:layout_height="wrap_content"
             android:text="返却実行"
-            android:backgroundTint="#00695C"/>
+            android:backgroundTint="@color/business_success"/>
     </LinearLayout>
 </LinearLayout>

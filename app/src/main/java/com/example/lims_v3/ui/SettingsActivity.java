@@ -13,6 +13,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.lims_v3.R;
+import com.example.lims_v3.util.ApiConfig;
 
 public class SettingsActivity extends AppCompatActivity {
 
@@ -83,8 +84,11 @@ public class SettingsActivity extends AppCompatActivity {
         String url = etApiUrl.getText().toString().trim();
         boolean isTerminalMode = cbTerminalMode.isChecked();
 
-        if (url.isEmpty()) {
-            Toast.makeText(this, "URLを入力してください", Toast.LENGTH_SHORT).show();
+        final String normalizedUrl;
+        try {
+            normalizedUrl = ApiConfig.normalizeBaseUrl(url);
+        } catch (IllegalArgumentException exception) {
+            Toast.makeText(this, exception.getMessage(), Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -92,7 +96,7 @@ public class SettingsActivity extends AppCompatActivity {
         SharedPreferences prefs = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
 
-        editor.putString(KEY_API_URL, url);
+        editor.putString(KEY_API_URL, normalizedUrl);
         editor.putBoolean(KEY_TERMINAL_MODE, isTerminalMode);
         editor.apply(); // apply()は非同期で保存するのでUIをブロックしない
 
