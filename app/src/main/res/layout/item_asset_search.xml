@@ -25,6 +25,15 @@
             android:textStyle="bold"
             android:layout_marginBottom="4dp"/>
 
+        <TextView
+            android:id="@+id/tvAssetGenre"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="ノートPC"
+            android:textColor="#00796B"
+            android:textSize="12sp"
+            android:layout_marginBottom="8dp"/>
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -36,14 +45,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="M-001"
-                android:textColor="#757575"
-                android:layout_marginEnd="16dp"/>
-
-            <TextView
-                android:id="@+id/tvAssetModel"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="M2 Max"
                 android:textColor="#757575"/>
         </LinearLayout>
 

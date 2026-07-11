@@ -6,12 +6,12 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.lims_v3.LoginActivity;
 import com.example.lims_v3.R;
+import com.example.lims_v3.util.AuthSessionManager;
 
 public class MenuActivity extends AppCompatActivity {
     private boolean isTerminalMode;
@@ -78,14 +78,9 @@ public class MenuActivity extends AppCompatActivity {
 
         // 検索ボタン
         Button btnSearch=findViewById(R.id.btnSearch);
-//        btnSearch.setOnClickListener(v -> {
-//            Intent intent =new Intent(MenuActivity.this, SearchActivity.class);
-//            startActivity(intent);
-//        });
         btnSearch.setOnClickListener(v -> {
-            Toast.makeText(MenuActivity.this,
-                    "動作不安定のため今後機能追加予定です．",
-                    Toast.LENGTH_SHORT).show();
+            Intent intent =new Intent(MenuActivity.this, SearchActivity.class);
+            startActivity(intent);
         });
 
 
@@ -98,6 +93,7 @@ public class MenuActivity extends AppCompatActivity {
 
         // ログアウト
         findViewById(R.id.btnLogout).setOnClickListener(v -> {
+            AuthSessionManager.clearSession(MenuActivity.this);
             Intent intent = new Intent(MenuActivity.this, LoginActivity.class);
             startActivity(intent);
             finish();

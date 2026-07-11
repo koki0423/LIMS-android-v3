@@ -13,42 +13,178 @@
         android:textStyle="bold"
         android:layout_marginBottom="24dp"/>
 
-    <TextView android:text="備品番号を入力" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
-    <EditText
-        android:id="@+id/etSearchId"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="例: OFS-20251101..."
-        android:inputType="text"
-        android:layout_marginBottom="16dp"/>
-
-    <TextView android:text="または 備品名キーワードを入力" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
-    <EditText
-        android:id="@+id/etSearchKeyword"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="例: MacBook"
-        android:layout_marginBottom="16dp"/>
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="検索結果"
-        android:textSize="14sp"
-        android:layout_marginBottom="8dp"/>
-
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:background="#FAFAFA">
+        android:fillViewport="true">
 
         <LinearLayout
-            android:id="@+id/searchResultContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="4dp">
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="12dp">
+
+                <ProgressBar
+                    android:id="@+id/progressSearchInit"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone"
+                    android:layout_marginEnd="12dp"/>
+
+                <TextView
+                    android:id="@+id/tvSearchInitStatus"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textColor="#757575"
+                    android:visibility="gone"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/layoutSearchInitError"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="#FFF3E0"
+                android:padding="12dp"
+                android:visibility="gone"
+                android:layout_marginBottom="16dp">
+
+                <TextView
+                    android:id="@+id/tvSearchInitError"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="#C62828"
+                    android:layout_marginBottom="12dp"/>
+
+                <Button
+                    android:id="@+id/btnRetrySearchInit"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="再試行"/>
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="検索方法"
+                android:textStyle="bold"
+                android:layout_marginBottom="8dp"/>
+
+            <RadioGroup
+                android:id="@+id/rgSearchTarget"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="16dp">
+
+                <RadioButton
+                    android:id="@+id/rbSearchByManagementNumber"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="管理番号"
+                    android:checked="true"/>
+
+                <RadioButton
+                    android:id="@+id/rbSearchByName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="備品名"/>
+            </RadioGroup>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="ジャンル（任意）"
+                android:textStyle="bold"
+                android:layout_marginBottom="8dp"/>
+
+            <Spinner
+                android:id="@+id/spinnerGenre"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"/>
+
+            <TextView
+                android:id="@+id/tvSearchModeNote"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="管理番号は完全一致で検索します"
+                android:textColor="#757575"
+                android:layout_marginBottom="8dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="管理番号 / 備品名"
+                android:textStyle="bold"/>
+
+            <EditText
+                android:id="@+id/etSearchQuery"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="例: OFS-20250901-0001"
+                android:inputType="text"
+                android:maxLines="1"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="16dp"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="16dp">
+
+                <Button
+                    android:id="@+id/btnClearSearch"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="クリア"/>
+
+                <Space
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"/>
+
+                <Button
+                    android:id="@+id/btnExecSearch"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="検索"
+                    android:backgroundTint="@color/business_primary"
+                    android:textColor="#FFFFFF"/>
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="検索結果"
+                android:textSize="14sp"
+                android:layout_marginBottom="4dp"/>
+
+            <TextView
+                android:id="@+id/tvSearchSummary"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="-"
+                android:textColor="#757575"
+                android:layout_marginBottom="8dp"/>
+
+            <LinearLayout
+                android:id="@+id/searchResultContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="#FAFAFA"
+                android:padding="4dp">
+            </LinearLayout>
         </LinearLayout>
     </ScrollView>
 
@@ -57,18 +193,11 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:paddingTop="16dp">
+
         <Button
             android:id="@+id/btnBackSearch"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="戻る"/>
-        <Space android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"/>
-        <Button
-            android:id="@+id/btnExecSearch"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="検索"
-            android:backgroundTint="#009688"
-            android:textColor="#FFFFFF"/>
     </LinearLayout>
 </LinearLayout>

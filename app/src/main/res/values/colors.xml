@@ -2,4 +2,16 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="business_primary">#2F5D7E</color>
+    <color name="business_primary_container">#D9E4EC</color>
+    <color name="business_secondary">#4C6472</color>
+    <color name="business_surface">#FFFFFFFF</color>
+    <color name="business_surface_variant">#F4F6F8</color>
+    <color name="business_background">#F7F8FA</color>
+    <color name="business_text_primary">#1F2937</color>
+    <color name="business_text_secondary">#5F6B76</color>
+    <color name="business_outline">#D7DDE2</color>
+    <color name="business_success">#2E7D5A</color>
+    <color name="business_error">#B04A4A</color>
+    <color name="business_button_neutral">#E5E7EB</color>
 </resources>
