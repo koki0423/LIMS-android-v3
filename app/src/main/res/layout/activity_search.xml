@@ -74,7 +74,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="検索対象"
+                android:text="検索方法"
                 android:textStyle="bold"
                 android:layout_marginBottom="8dp"/>
 
@@ -102,7 +102,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="ジャンル"
+                android:text="ジャンル（任意）"
                 android:textStyle="bold"
                 android:layout_marginBottom="8dp"/>
 
@@ -113,9 +113,17 @@
                 android:layout_marginBottom="16dp"/>
 
             <TextView
+                android:id="@+id/tvSearchModeNote"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="検索入力"
+                android:text="管理番号は完全一致で検索します"
+                android:textColor="#757575"
+                android:layout_marginBottom="8dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="管理番号 / 備品名"
                 android:textStyle="bold"/>
 
             <EditText
@@ -124,6 +132,7 @@
                 android:layout_height="wrap_content"
                 android:hint="例: OFS-20250901-0001"
                 android:inputType="text"
+                android:maxLines="1"
                 android:layout_marginTop="8dp"
                 android:layout_marginBottom="16dp"/>
 

@@ -8,6 +8,7 @@ import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -39,6 +40,11 @@ import retrofit2.Response;
 
 public class SearchActivity extends AppCompatActivity {
     private static final String ALL_GENRES_LABEL = "すべて";
+    private static final String DEFAULT_PROMPT_MESSAGE = "管理番号または備品名を入力してください";
+    private static final String MANAGEMENT_NUMBER_HINT = "例: OFS-20250901-0001";
+    private static final String ASSET_NAME_HINT = "例: MacBook";
+    private static final String MANAGEMENT_NUMBER_NOTE = "管理番号は完全一致で検索します";
+    private static final String ASSET_NAME_NOTE = "備品名は部分一致で検索します";
 
     private enum SearchMode {
         MANAGEMENT_NUMBER,
@@ -46,9 +52,7 @@ public class SearchActivity extends AppCompatActivity {
     }
 
     private enum ScreenState {
-        INITIALIZING,
         READY,
-        INIT_ERROR,
         SEARCHING
     }
 
@@ -73,6 +77,7 @@ public class SearchActivity extends AppCompatActivity {
 
     private RadioGroup rgSearchTarget;
     private EditText etQuery;
+    private TextView tvSearchModeNote;
     private Spinner spinnerGenre;
     private LinearLayout resultContainer;
     private TextView tvSearchSummary;
@@ -84,8 +89,14 @@ public class SearchActivity extends AppCompatActivity {
     private Button btnExec;
     private Button btnClear;
     private SearchMode currentMode = SearchMode.MANAGEMENT_NUMBER;
-    private ScreenState screenState = ScreenState.INITIALIZING;
+    private ScreenState screenState = ScreenState.READY;
     private final List<GenreOption> genreOptions = new ArrayList<>();
+    private boolean isGenreLoading = false;
+    private boolean isGenreAvailable = false;
+    private boolean hasGenreLoadError = false;
+    private String genreLoadErrorMessage = "";
+    private boolean hasBlockingSetupError = false;
+    private String blockingSetupErrorMessage = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,6 +105,7 @@ public class SearchActivity extends AppCompatActivity {
 
         rgSearchTarget = findViewById(R.id.rgSearchTarget);
         etQuery = findViewById(R.id.etSearchQuery);
+        tvSearchModeNote = findViewById(R.id.tvSearchModeNote);
         spinnerGenre = findViewById(R.id.spinnerGenre);
         resultContainer = findViewById(R.id.searchResultContainer);
         tvSearchSummary = findViewById(R.id.tvSearchSummary);
@@ -116,7 +128,7 @@ public class SearchActivity extends AppCompatActivity {
         btnExec.setOnClickListener(v -> {
             String query = etQuery.getText().toString().trim();
             if (query.isEmpty()) {
-                Toast.makeText(this, "検索条件を入力してください", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, DEFAULT_PROMPT_MESSAGE, Toast.LENGTH_SHORT).show();
                 return;
             }
 
@@ -126,6 +138,8 @@ public class SearchActivity extends AppCompatActivity {
         });
 
         btnClear.setOnClickListener(v -> resetSearchForm());
+        bindGenrePlaceholder();
+        showReadyState(true);
         initializeGenres(false);
     }
 
@@ -136,7 +150,7 @@ public class SearchActivity extends AppCompatActivity {
                     : SearchMode.MANAGEMENT_NUMBER;
             updateSearchModeUi();
             if (screenState == ScreenState.READY) {
-                renderMessage("条件を入力して検索してください");
+                renderMessage(DEFAULT_PROMPT_MESSAGE);
             }
             updateActionButtons();
         });
@@ -157,21 +171,38 @@ public class SearchActivity extends AppCompatActivity {
             public void afterTextChanged(Editable s) {
             }
         });
+        spinnerGenre.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                updateActionButtons();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                updateActionButtons();
+            }
+        });
     }
 
     private void updateSearchModeUi() {
         if (currentMode == SearchMode.ASSET_NAME) {
-            etQuery.setHint("例: MacBook");
+            etQuery.setHint(ASSET_NAME_HINT);
+            tvSearchModeNote.setText(ASSET_NAME_NOTE);
         } else {
-            etQuery.setHint("例: OFS-20250901-0001");
+            etQuery.setHint(MANAGEMENT_NUMBER_HINT);
+            tvSearchModeNote.setText(MANAGEMENT_NUMBER_NOTE);
         }
     }
 
     private void updateActionButtons() {
-        boolean isReady = screenState == ScreenState.READY;
+        boolean canInteract = screenState != ScreenState.SEARCHING && !hasBlockingSetupError;
         boolean hasQuery = !etQuery.getText().toString().trim().isEmpty();
-        btnExec.setEnabled(isReady && hasQuery);
-        btnClear.setEnabled(isReady && (hasQuery || !"-".contentEquals(tvSearchSummary.getText())));
+        boolean hasGenreFilter = hasSelectedGenreFilter();
+        boolean hasRenderedState = !"-".contentEquals(tvSearchSummary.getText());
+
+        btnExec.setEnabled(canInteract && hasQuery);
+        btnClear.setEnabled(canInteract && (hasQuery || hasGenreFilter || hasRenderedState));
+        btnRetryInit.setEnabled(canInteract && hasGenreLoadError);
     }
 
     private void resetSearchForm() {
@@ -183,7 +214,7 @@ public class SearchActivity extends AppCompatActivity {
         currentMode = SearchMode.MANAGEMENT_NUMBER;
         updateSearchModeUi();
         if (screenState == ScreenState.READY) {
-            renderMessage("条件を入力して検索してください");
+            renderMessage(DEFAULT_PROMPT_MESSAGE);
         }
         updateActionButtons();
     }
@@ -191,7 +222,7 @@ public class SearchActivity extends AppCompatActivity {
     private void initializeGenres(boolean forceRefresh) {
         if (!forceRefresh && GenreCache.isInitialized()) {
             bindGenreOptions(GenreCache.getGenres());
-            showReadyState(true);
+            showGenreReadyState();
             return;
         }
 
@@ -201,7 +232,7 @@ public class SearchActivity extends AppCompatActivity {
         try {
             service = ApiClientFactory.createService(this, GenreApiService.class);
         } catch (IllegalStateException | IllegalArgumentException exception) {
-            showInitializationError(exception.getMessage());
+            showBlockingSetupError(exception.getMessage());
             return;
         }
 
@@ -215,7 +246,7 @@ public class SearchActivity extends AppCompatActivity {
 
                 GenreCache.storeGenres(response.body());
                 bindGenreOptions(response.body());
-                showReadyState(true);
+                showGenreReadyState();
             }
 
             @Override
@@ -223,6 +254,13 @@ public class SearchActivity extends AppCompatActivity {
                 showInitializationError("ジャンル一覧の取得に失敗しました");
             }
         });
+    }
+
+    private void bindGenrePlaceholder() {
+        genreOptions.clear();
+        genreOptions.add(new GenreOption(null, ALL_GENRES_LABEL));
+        applyGenreAdapter();
+        spinnerGenre.setSelection(0);
     }
 
     private void bindGenreOptions(List<GenreResponse> genres) {
@@ -242,6 +280,11 @@ public class SearchActivity extends AppCompatActivity {
             genreOptions.add(new GenreOption(genre.getGenreId(), label));
         }
 
+        applyGenreAdapter();
+        spinnerGenre.setSelection(0);
+    }
+
+    private void applyGenreAdapter() {
         ArrayAdapter<GenreOption> genreAdapter = new ArrayAdapter<>(
                 this,
                 android.R.layout.simple_spinner_item,
@@ -249,7 +292,6 @@ public class SearchActivity extends AppCompatActivity {
         );
         genreAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerGenre.setAdapter(genreAdapter);
-        spinnerGenre.setSelection(0);
     }
 
     private void performSearch(String query) {
@@ -306,46 +348,70 @@ public class SearchActivity extends AppCompatActivity {
     }
 
     private void showInitializationLoading() {
-        screenState = ScreenState.INITIALIZING;
-        progressInit.setVisibility(View.VISIBLE);
-        tvInitStatus.setVisibility(View.VISIBLE);
-        tvInitStatus.setText("ジャンル一覧を取得しています");
-        initErrorContainer.setVisibility(View.GONE);
-        setFormEnabled(false);
-        renderMessage("検索に必要な初期データを取得しています");
+        isGenreLoading = true;
+        isGenreAvailable = false;
+        hasGenreLoadError = false;
+        genreLoadErrorMessage = "";
+        hasBlockingSetupError = false;
+        blockingSetupErrorMessage = "";
+        renderHeaderState();
+        updateFormEnabled();
+        updateActionButtons();
+    }
+
+    private void showGenreReadyState() {
+        isGenreLoading = false;
+        isGenreAvailable = true;
+        hasGenreLoadError = false;
+        genreLoadErrorMessage = "";
+        hasBlockingSetupError = false;
+        blockingSetupErrorMessage = "";
+        renderHeaderState();
+        updateFormEnabled();
         updateActionButtons();
     }
 
     private void showReadyState(boolean showPromptMessage) {
         screenState = ScreenState.READY;
-        progressInit.setVisibility(View.GONE);
-        tvInitStatus.setVisibility(View.GONE);
-        initErrorContainer.setVisibility(View.GONE);
-        setFormEnabled(true);
+        renderHeaderState();
+        updateFormEnabled();
         if (showPromptMessage) {
-            renderMessage("条件を入力して検索してください");
+            renderMessage(DEFAULT_PROMPT_MESSAGE);
         }
         updateActionButtons();
     }
 
     private void showInitializationError(String message) {
-        screenState = ScreenState.INIT_ERROR;
-        progressInit.setVisibility(View.GONE);
-        tvInitStatus.setVisibility(View.GONE);
-        initErrorContainer.setVisibility(View.VISIBLE);
-        tvInitError.setText(message + "\n通信状況またはAPI設定を確認してください");
-        setFormEnabled(false);
-        renderMessage("検索画面を初期化できませんでした");
+        isGenreLoading = false;
+        isGenreAvailable = false;
+        hasGenreLoadError = true;
+        genreLoadErrorMessage = message;
+        hasBlockingSetupError = false;
+        blockingSetupErrorMessage = "";
+        bindGenrePlaceholder();
+        renderHeaderState();
+        updateFormEnabled();
         updateActionButtons();
+    }
+
+    private void showBlockingSetupError(String message) {
+        isGenreLoading = false;
+        isGenreAvailable = false;
+        hasGenreLoadError = false;
+        genreLoadErrorMessage = "";
+        hasBlockingSetupError = true;
+        blockingSetupErrorMessage = message;
+        bindGenrePlaceholder();
+        renderHeaderState();
+        updateFormEnabled();
+        updateActionButtons();
+        renderMessage("API設定を確認してください");
     }
 
     private void showSearchingState() {
         screenState = ScreenState.SEARCHING;
-        progressInit.setVisibility(View.VISIBLE);
-        tvInitStatus.setVisibility(View.VISIBLE);
-        tvInitStatus.setText("検索中です");
-        initErrorContainer.setVisibility(View.GONE);
-        setFormEnabled(false);
+        renderHeaderState();
+        updateFormEnabled();
         renderMessage("検索中です");
         updateActionButtons();
     }
@@ -356,10 +422,43 @@ public class SearchActivity extends AppCompatActivity {
         updateActionButtons();
     }
 
-    private void setFormEnabled(boolean enabled) {
+    private void renderHeaderState() {
+        if (screenState == ScreenState.SEARCHING) {
+            progressInit.setVisibility(View.VISIBLE);
+            tvInitStatus.setVisibility(View.VISIBLE);
+            tvInitStatus.setText("検索中です");
+            initErrorContainer.setVisibility(View.GONE);
+            return;
+        }
+
+        if (isGenreLoading) {
+            progressInit.setVisibility(View.VISIBLE);
+            tvInitStatus.setVisibility(View.VISIBLE);
+            tvInitStatus.setText("ジャンル一覧を取得しています");
+            initErrorContainer.setVisibility(View.GONE);
+            return;
+        }
+
+        progressInit.setVisibility(View.GONE);
+        tvInitStatus.setVisibility(View.GONE);
+        if (hasBlockingSetupError) {
+            initErrorContainer.setVisibility(View.VISIBLE);
+            tvInitError.setText(blockingSetupErrorMessage);
+            return;
+        }
+        if (hasGenreLoadError) {
+            initErrorContainer.setVisibility(View.VISIBLE);
+            tvInitError.setText(genreLoadErrorMessage + "\nジャンル指定なしで検索できます");
+        } else {
+            initErrorContainer.setVisibility(View.GONE);
+        }
+    }
+
+    private void updateFormEnabled() {
+        boolean enabled = screenState != ScreenState.SEARCHING && !hasBlockingSetupError;
         setRadioGroupEnabled(rgSearchTarget, enabled);
-        spinnerGenre.setEnabled(enabled);
         etQuery.setEnabled(enabled);
+        spinnerGenre.setEnabled(enabled && isGenreAvailable);
     }
 
     private void renderResults(List<AssetSetResponse> results) {
@@ -396,6 +495,11 @@ public class SearchActivity extends AppCompatActivity {
         }
     }
 
+    private boolean hasSelectedGenreFilter() {
+        GenreOption selectedGenre = (GenreOption) spinnerGenre.getSelectedItem();
+        return selectedGenre != null && selectedGenre.getGenreId() != null;
+    }
+
     private String getGenre(AssetSetResponse item) {
         if (item == null || item.getMaster() == null) {
             return "";
@@ -413,10 +517,15 @@ public class SearchActivity extends AppCompatActivity {
 
         TextView tvName = card.findViewById(R.id.tvAssetName);
         TextView tvMng = card.findViewById(R.id.tvAssetMngNum);
-        TextView tvModel = card.findViewById(R.id.tvAssetModel);
         TextView tvLoc = card.findViewById(R.id.tvAssetLocation);
         TextView tvQty = card.findViewById(R.id.tvAssetQuantity);
         TextView tvGenre = card.findViewById(R.id.tvAssetGenre);
+
+        tvName.setText("-");
+        tvMng.setText("-");
+        tvLoc.setText("-");
+        tvQty.setText("-");
+        tvGenre.setVisibility(View.GONE);
 
         if (item.getMaster() != null) {
             String assetName = item.getMaster().getName();
@@ -424,7 +533,6 @@ public class SearchActivity extends AppCompatActivity {
                 assetName = item.getAsset().getName();
             }
             tvName.setText(assetName != null && !assetName.isEmpty() ? assetName : "-");
-            tvModel.setText(item.getMaster().getModel() != null ? item.getMaster().getModel() : "-");
             String genreName = getGenre(item);
             if (genreName.isEmpty()) {
                 tvGenre.setVisibility(View.GONE);
@@ -434,8 +542,8 @@ public class SearchActivity extends AppCompatActivity {
             }
         }
         if (item.getAsset() != null) {
-            tvMng.setText(item.getAsset().getManagementNumber());
-            tvLoc.setText(item.getAsset().getLocation());
+            tvMng.setText(item.getAsset().getManagementNumber() != null ? item.getAsset().getManagementNumber() : "-");
+            tvLoc.setText(item.getAsset().getLocation() != null ? item.getAsset().getLocation() : "-");
             tvQty.setText(String.valueOf(item.getAsset().getQuantity()));
         }
 
